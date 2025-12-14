@@ -102,7 +102,7 @@ export default function Sidebar({
 
             {/* Footer */}
             <div className="p-3 border-t border-sidebar-border">
-                <div className="text-xs text-muted-foreground text-center">
+                <div className="text-sm text-muted-foreground text-center">
                     {notes.length} note{notes.length !== 1 ? "s": ""}
                 </div>
             </div>
