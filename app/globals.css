@@ -1,23 +1,102 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 95%;
+
+  --card: 240 10% 5.5%;
+  --card-foreground: 0 0% 95%;
+
+  --popover: 240 10% 5.5%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 240 5% 12%;
+  --secondary-foreground: 0 0% 85%;
+
+  --muted: 240 5% 15%;
+  --muted-foreground: 240 5% 55%;
+
+  --accent: 262 83% 58%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 62% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 240 5% 18%;
+  --input: 240 5% 18%;
+  --ring: 262 83% 58%;
+
+  --radius: 0.5rem;
+
+  --sidebar-background: 240 10% 4.5%;
+  --sidebar-foreground: 240 5% 65%;
+  --sidebar-primary: 262 83% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 5% 10%;
+  --sidebar-accent-foreground: 0 0% 95%;
+  --sidebar-border: 240 5% 12%;
+  --sidebar-ring: 262 83% 58%;
+
+  /* Custom tokens */
+  --editor-bg: 240 10% 6%;
+  --editor-line: 240 5% 12%;
+  --preview-bg: 240 10% 5%;
+  --toolbar-bg: 240 10% 7%;
+  --note-hover: 262 83% 58% / 0.1;
+  --note-active: 262 83% 58% / 0.2;
+
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-ring: hsl(var(--ring));
+
+  --color-destructive: hsl(var(--destructive));
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-fade-in: fade-in 0.2s ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translate(4px)
+    }
+    to {
+      opacity: 1;
+      transform: translate(0)
+    }
+  }
+
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   background: var(--background);
