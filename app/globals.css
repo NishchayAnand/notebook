@@ -67,6 +67,7 @@
 
   --color-secondary: hsl(var(--secondary));
 
+  --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
 
   --color-ring: hsl(var(--ring));
@@ -76,6 +77,10 @@
   --color-toolbar-bg: hsl(var(--toolbar-bg));
 
   --color-border: hsl(var(--border));
+
+  --color-editor-bg: hsl(var(--editor-bg));
+
+  --color-preview-bg: hsl(var(--preview-bg));
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -103,7 +108,95 @@
 } */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-background text-foreground font-sans antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Editor textarea styles */
+.editor-textarea {
+  font-family: 'JetBrains Mono', monospace;
+  @apply bg-transparent resize-none outline-none w-full h-full text-foreground;
+  line-height: 1.8;
+  tab-size: 2;
+}
+
+.editor-textarea::placeholder {
+  @apply text-muted-foreground/50;
+}
+
+/* Markdown preview styles */
+.markdown-preview {
+  @apply text-foreground leading-relaxed;
+}
+
+.markdown-preview h1 {
+  @apply text-3xl font-bold mb-4 mt-6 text-foreground border-b border-border pb-2;
+}
+
+.markdown-preview h2 {
+  @apply text-2xl font-semibold mb-3 mt-5 text-foreground;
+}
+
+.markdown-preview h3 {
+  @apply text-xl font-semibold mb-2 mt-4 text-foreground;
+}
+
+.markdown-preview p {
+  @apply mb-4 text-muted-foreground;
+}
+
+.markdown-preview ul, .markdown-preview ol {
+  @apply mb-4 pl-6 text-muted-foreground;
+}
+
+.markdown-preview ul {
+  @apply list-disc;
+}
+
+.markdown-preview ol {
+  @apply list-decimal;
+}
+
+.markdown-preview li {
+  @apply mb-1;
+}
+
+.markdown-preview code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-primary;
+}
+
+.markdown-preview pre {
+  @apply bg-muted p-4 rounded-lg mb-4 overflow-x-auto;
+}
+
+.markdown-preview pre code {
+  @apply bg-transparent p-0;
+}
+
+.markdown-preview blockquote {
+  @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4;
+}
+
+.markdown-preview a {
+  @apply text-primary hover:underline;
+}
+
+.markdown-preview hr {
+  @apply border-border my-6;
+}
+
+.markdown-preview table {
+  @apply w-full border-collapse mb-4;
+}
+
+.markdown-preview th, .markdown-preview td {
+  @apply border border-border px-3 py-2 text-left;
+}
+
+.markdown-preview th {
+  @apply bg-muted font-semibold;
+}
+
+.markdown-preview img {
+  @apply max-w-full rounded-lg my-4;
 }

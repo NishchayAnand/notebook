@@ -6,93 +6,103 @@ interface EditorProps {
 }
 
 export default function Editor({ content, onChange }: EditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleInsert = useCallback(
-    (syntax: string, wrap?: boolean, placeholder?: string) => {
-      const textarea = textareaRef.current;
-      if (!textarea) return;
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = content.substring(start, end);
+    const handleInsert = useCallback((syntax: string, wrap?: boolean, placeholder?: string) => {
+      
+        const textarea = textareaRef.current;
+        if (!textarea) return;
 
-      let newText: string;
-      let cursorPos: number;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = content.substring(start, end);
 
-      if (wrap && selectedText) {
-        // Wrap selected text
-        newText =
-          content.substring(0, start) +
-          syntax +
-          selectedText +
-          syntax +
-          content.substring(end);
-        cursorPos = start + syntax.length + selectedText.length + syntax.length;
-      } else if (wrap) {
-        // Insert with placeholder
-        const text = placeholder || "text";
-        newText =
-          content.substring(0, start) +
-          syntax +
-          text +
-          syntax +
-          content.substring(end);
-        cursorPos = start + syntax.length;
-        // Select the placeholder
-        setTimeout(() => {
-          textarea.setSelectionRange(cursorPos, cursorPos + text.length);
-        }, 0);
-      } else {
-        // Just insert syntax
-        const text = placeholder || "";
-        newText = content.substring(0, start) + syntax + text + content.substring(end);
-        cursorPos = start + syntax.length + text.length;
-      }
+        let newText: string;
+        let cursorPos: number;
 
-      onChange(newText);
-      textarea.focus();
+        if (wrap && selectedText) {
+            // Wrap selected text
+            newText =
+                content.substring(0, start) +
+                syntax +
+                selectedText +
+                syntax +
+                content.substring(end);
 
-      if (!wrap || selectedText) {
-        setTimeout(() => {
-          textarea.setSelectionRange(cursorPos, cursorPos);
-        }, 0);
-      }
-    },
-    [content, onChange]
-  );
+                cursorPos = start + syntax.length + selectedText.length + syntax.length;
+        
+        } else if (wrap) {
+            // Insert with placeholder
+            const text = placeholder || "text";
+            newText =
+                content.substring(0, start) +
+                syntax +
+                text +
+                syntax +
+                content.substring(end);
+            
+            cursorPos = start + syntax.length;
+    
+            // Select the placeholder
+            setTimeout(() => {
+                textarea.setSelectionRange(cursorPos, cursorPos + text.length);
+            }, 0);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Handle tab key
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const textarea = textareaRef.current;
-      if (!textarea) return;
+        } else {
+            // Just insert syntax
+            const text = placeholder || "";
+            newText = content.substring(0, start) + syntax + text + content.substring(end);
+            cursorPos = start + syntax.length + text.length;
+        }
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
+        onChange(newText);
+        textarea.focus();
 
-      const newContent =
-        content.substring(0, start) + "  " + content.substring(end);
-      onChange(newContent);
+        if (!wrap || selectedText) {
+            // React updates state asynchronously. Cursor must be set after DOM updates
+            setTimeout(() => {
+                textarea.setSelectionRange(cursorPos, cursorPos);
+            }, 0);
+        }
 
-      setTimeout(() => {
-        textarea.setSelectionRange(start + 2, start + 2);
-      }, 0);
-    }
+    }, [content, onChange]);
 
-    // Ctrl/Cmd + B for bold
-    if ((e.ctrlKey || e.metaKey) && e.key === "b") {
-      e.preventDefault();
-      handleInsert("**", true, "bold text");
-    }
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    
+        // Handle tab key
+        if (e.key === "Tab") {
 
-    // Ctrl/Cmd + I for italic
-    if ((e.ctrlKey || e.metaKey) && e.key === "i") {
-      e.preventDefault();
-      handleInsert("_", true, "italic text");
-    }
-  };
+            e.preventDefault();
+            const textarea = textareaRef.current;   
+            if (!textarea) return;
+
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            const newContent = content.substring(0, start) + "  " + content.substring(end);
+            onChange(newContent);
+
+            // React updates state asynchronously. Cursor must be set after DOM updates
+            setTimeout(() => {
+                textarea.setSelectionRange(start + 2, start + 2);
+            }, 0);
+
+        }
+
+        // Ctrl/Cmd + B for bold
+        if ((e.ctrlKey || e.metaKey) && e.key === "b") {
+            e.preventDefault();
+            handleInsert("**", true, "bold text");
+        }
+
+        // Ctrl/Cmd + I for italic
+        if ((e.ctrlKey || e.metaKey) && e.key === "i") {
+            e.preventDefault();
+            handleInsert("_", true, "italic text");
+        }
+
+    };
 
   return (
     <div className="flex-1 flex flex-col bg-editor-bg">
