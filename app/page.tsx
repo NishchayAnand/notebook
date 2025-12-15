@@ -1,14 +1,15 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { Note } from "@/types/note";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/markdown-editor/Sidebar";
-import { Eye, FileEdit, PanelLeft, PanelLeftClose } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Editor from "@/components/markdown-editor/Editor";
 import Preview from "@/components/markdown-editor/Preview";
+import { AIChatSidebar } from "@/components/markdown-editor/AIChatSidebar";
+import { Note } from "@/types/note";
+import { PanelLeftClose, PanelLeft, Columns, FileEdit, Eye, Sparkles, MessageSquare } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type ViewMode = "editor" | "preview";
+type ViewMode = "live" | "split" | "editor" | "preview";
 
 const DEFAULT_CONTENT = `# Welcome to Your Vault
 
@@ -28,7 +29,7 @@ This is a **markdown editor** inspired by Obsidian. Start writing your notes her
 
 ### Code Example
 
-\`\`\`
+\`\`\`javascript
 const greeting = "Hello, World!";
 console.log(greeting);
 \`\`\`
@@ -51,18 +52,14 @@ const defaultNote: Note = {
   title: "Welcome",
   content: DEFAULT_CONTENT,
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 };
 
-// Utility function - ID Generation
-// 1. Math.random() - Returns a random floating-point number, Range: 0 ≤ number < 1, Example: 0.527839274
-// 2. toString(36) - Converts the number to a base-36 string (Numbers: 0–9, Letters: a–z), Example: "0.q9f3k2x7"
-// 3. substring(2, 15) - Removes the "0." at the beginning, Extracts 13 characters of randomness, Example: "0.q9f3k2x7m8ab" → "q9f3k2x7m8ab"
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15);
 }
 
-export default function Home() {
+export default function MarkdownEditor() {
 
   const [notes, setNotes] = useState<Note[]>([defaultNote]);
 
@@ -89,45 +86,32 @@ export default function Home() {
     return notes.length > 0 ? notes[0].id : null;
   });
 
-  // Derived State
-  const activeNote = notes.find((note) => note.id === activeNoteId);
-
-  // UI State
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [viewMode, setViewMode] = useState<ViewMode>("editor");
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("live");
 
-  // Note Actions (CRUD)
+  const activeNote = notes.find((n) => n.id === activeNoteId);
 
-  // 1. Create Note
-  // Create a blank note
-  // Adds it to the top
-  // Makes it active immediately
   const handleCreateNote = () => {
     const newNote: Note = {
       id: generateId(),
       title: "Untitled",
       content: "",
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
     setNotes((prev) => [newNote, ...prev]);
     setActiveNoteId(newNote.id);
   };
 
-  // 2. Delete Note
-  // Removes note from state
-  // If deleted note was active, switches to next available note, or sets null
   const handleDeleteNote = (id: string) => {
-    setNotes((prev) => {
-      const remaining = prev.filter((n) => n.id !== id);
-      if (activeNoteId === id) {
-        setActiveNoteId(remaining.length ? remaining[0].id : null);
-      }
-      return remaining;
-    });
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+    if (activeNoteId === id) {
+      const remaining = notes.filter((n) => n.id !== id);
+      setActiveNoteId(remaining.length > 0 ? remaining[0].id : null);
+    }
   };
 
-  // 3. Update Note Content
   const handleContentChange = (content: string) => {
     if (!activeNoteId) return;
 
@@ -156,11 +140,10 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden">
-
-      {/* Sidebar Rendering (conditional) - fully controlled by parent */}
+    <div className="h-screen flex bg-background overflow-hidden">
+      {/* Sidebar */}
       {sidebarOpen && (
-        <Sidebar 
+        <Sidebar
           notes={notes}
           activeNoteId={activeNoteId}
           onSelectNote={setActiveNoteId}
@@ -171,14 +154,13 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-
         {/* Top Bar */}
         <header className="flex items-center justify-between px-4 py-2 bg-toolbar-bg border-b border-border">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-md text-muted-foreground hover:text-foreground hover: hover:bg-muted transition-colors"
-              title={sidebarOpen ? " Hide sidebar" : "Show sidebar"}
+              className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
             >
               {sidebarOpen ? (
                 <PanelLeftClose className="w-5 h-5" />
@@ -193,66 +175,88 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+              <button
+                onClick={() => setViewMode("editor")}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  viewMode === "editor"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Source mode"
+              >
+                <FileEdit className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => setViewMode("preview")}
+                className={cn(
+                  "p-1.5 rounded-md transition-colors",
+                  viewMode === "preview"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title="Reading view"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+            </div>
+            
             <button
-              onClick={() => setViewMode("editor")}
+              onClick={() => setAiChatOpen(!aiChatOpen)}
               className={cn(
-                "p-1.5 rounded-md transition-colors",
-                viewMode === "editor"
+                "p-2 rounded-md transition-colors",
+                aiChatOpen
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
-              title="Source mode"
+              title="AI Assistant"
             >
-              <FileEdit className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("preview")}
-              className={cn(
-                "p-1.5 rounded-md transition-colors",
-                viewMode === "preview"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Reading view"
-            >
-              <Eye className="w-4 h-4" />
+              <MessageSquare className="w-5 h-5" />
             </button>
           </div>
         </header>
 
         {/* Editor Area */}
         <div className="flex-1 flex overflow-hidden">
-          {activeNote ? (
-            <>
-              {viewMode === "editor" && (
-                <Editor 
-                  content={activeNote.content}
-                  onChange={handleContentChange}
-                />
-              )}
-              {viewMode === "preview" && (
-                <Preview content={activeNote.content} />
-              )}
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <p className="text-lg mb-2">No note selected</p>
-                <button
-                  onClick={handleCreateNote}
-                  className="text-primary hover:underline"
-                >
-                  Create a new note
-                </button>
+          <div className="flex-1 flex overflow-hidden">
+            {activeNote ? (
+              <>
+                {viewMode === "editor" && (
+                  <Editor
+                    content={activeNote.content}
+                    onChange={handleContentChange}
+                  />
+                )}
+                {viewMode === "preview" && (
+                  <Preview content={activeNote.content} />
+                )}
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <p className="text-lg mb-2">No note selected</p>
+                  <button
+                    onClick={handleCreateNote}
+                    className="text-primary hover:underline"
+                  >
+                    Create a new note
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+          
+          {/* AI Chat Sidebar */}
+          <AIChatSidebar
+            isOpen={aiChatOpen}
+            onClose={() => setAiChatOpen(false)}
+            currentContent={activeNote?.content || ""}
+          />
         </div>
-
       </div>
-
     </div>
   );
-
 }
