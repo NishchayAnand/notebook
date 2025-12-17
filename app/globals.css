@@ -142,11 +142,11 @@ body {
 }
 
 .markdown-preview p {
-  @apply mb-4 text-muted-foreground;
+  @apply mb-4 text-white/90;
 }
 
 .markdown-preview ul, .markdown-preview ol {
-  @apply mb-4 pl-6 text-muted-foreground;
+  @apply mb-4 pl-6 text-white/90;
 }
 
 .markdown-preview ul {

@@ -14,7 +14,7 @@ import {
   Image,
   CheckSquare,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/lib/utils";
 
 interface ToolbarProps {
   onInsert: (syntax: string, wrap?: boolean, placeholder?: string) => void;

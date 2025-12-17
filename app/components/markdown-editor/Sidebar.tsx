@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react";
-import { Note } from "@/types/note";
+import { Note } from "@/app/types/note";
 import { FileText, Plus, Search, Trash2 } from "lucide-react"; 
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/lib/utils";
 
 interface SidebarProps {
     notes: Note[];

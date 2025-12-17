@@ -1,9 +1,15 @@
+"use client";
+
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChatMessage } from '@/types/note';
+import { Button } from '@/app/components/ui/button';
+import { Input } from '@/app/components/ui/input';
+import { ScrollArea } from '@/app/components/ui/scroll-area';
+import { ChatMessage } from '@/app/types/note';
+import { getSessionId } from '@/app/lib/utils';
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface AIChatSidebarProps {
   isOpen: boolean;
@@ -23,18 +29,17 @@ export function AIChatSidebar({ isOpen, onClose, currentContent }: AIChatSidebar
     ]);
 
     const [input, setInput] = useState('');
+    const [remaining, setRemaining] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // What is this??
     useEffect(() => {
         if (scrollRef.current) {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
 
-    // What is this??
     useEffect(() => {
         if (isOpen && inputRef.current) {
         inputRef.current.focus();
@@ -51,29 +56,60 @@ export function AIChatSidebar({ isOpen, onClose, currentContent }: AIChatSidebar
             timestamp: new Date(),
         };
 
+        // show user message immediately
         setMessages((prev) => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
-        // Simulate AI response (replace with actual AI integration)
-        setTimeout(() => {
-            const responses = [
-                "I can help you with that! Based on your current note, here are some suggestions...",
-                "Great question! Let me analyze your content and provide some insights.",
-                "I'd be happy to help expand on that topic. Here's what I think...",
-                "Looking at your note, I notice a few areas we could improve together.",
-            ];
+        try {
+
+            const res = await fetch("/api/ai/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-session-id": getSessionId(),
+                },
+                body: JSON.stringify({
+                    messages: [
+                        {
+                            role: "user",
+                            content: userMessage.content
+                        }
+                    ]
+                })
+            });
+
+            const data = await res.json();
+
+            if(!res.ok) {
+                throw new Error(
+                    data.message || data.error || "AI request failed"
+                );
+            }
 
             const assistantMessage: ChatMessage = {
                 id: (Date.now() + 1).toString(),
-                role: 'assistant',
-                content: responses[Math.floor(Math.random() * responses.length)],
-                timestamp: new Date(),
+                role: "assistant",
+                content: data.reply,
+                timestamp: new Date()
             };
 
+            // Append AI response
             setMessages((prev) => [...prev, assistantMessage]);
+            setRemaining(data.remaining);
+
+        } catch (error: any) {
+            const errorMessage: ChatMessage = {
+                id: (Date.now() + 2).toString(),
+                role: "assistant",
+                content: `⚠️ ${error.message}`,
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -99,7 +135,7 @@ export function AIChatSidebar({ isOpen, onClose, currentContent }: AIChatSidebar
                 </Button>
             </div>
 
-            <ScrollArea className="flex-1 p-3" ref={scrollRef}>
+            <ScrollArea className="flex-1 p-3 overflow-hidden" ref={scrollRef}>
                 <div className="space-y-4">
                     {messages.map((message) => (
                         <div
@@ -120,13 +156,16 @@ export function AIChatSidebar({ isOpen, onClose, currentContent }: AIChatSidebar
                                 )}
                             </div>
                             <div
-                                className={`flex-1 p-3 rounded-lg text-sm ${
+                                className={`markdown-preview flex-1 p-3 rounded-lg text-sm ${
                                     message.role === 'assistant'
                                         ? 'bg-muted/50 text-foreground'
                                         : 'bg-primary text-primary-foreground'
                                 }`}
                             >
-                                {message.content}
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {message.content}
+                                </ReactMarkdown>
+                                
                             </div>
                         </div>
                     ))}
@@ -167,9 +206,12 @@ export function AIChatSidebar({ isOpen, onClose, currentContent }: AIChatSidebar
                         <Send className="h-4 w-4" />
                     </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
-                    AI can help summarize, expand, or edit your notes
-                </p>
+
+                {remaining !== null && (
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                    🧠 Messages left today: {remaining} / 10
+                    </p>
+                )}
             </div>
         </div>
     );

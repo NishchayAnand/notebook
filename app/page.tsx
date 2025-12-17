@@ -1,13 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import Sidebar from "@/components/markdown-editor/Sidebar";
-import Editor from "@/components/markdown-editor/Editor";
-import Preview from "@/components/markdown-editor/Preview";
-import { AIChatSidebar } from "@/components/markdown-editor/AIChatSidebar";
-import { Note } from "@/types/note";
+import Sidebar from "@/app/components/markdown-editor/Sidebar";
+import Editor from "@/app/components/markdown-editor/Editor";
+import Preview from "@/app/components/markdown-editor/Preview";
+import { AIChatSidebar } from "@/app/components/markdown-editor/AIChatSidebar";
+import { Note } from "@/app/types/note";
 import { PanelLeftClose, PanelLeft, Columns, FileEdit, Eye, Sparkles, MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/app/lib/utils";
 
 type ViewMode = "live" | "split" | "editor" | "preview";
 
